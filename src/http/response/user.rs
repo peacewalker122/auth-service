@@ -10,4 +10,10 @@ pub struct UserDTO {
     pub email: String,
     pub token: Option<String>,
     pub refresh_token: Option<String>,
+    pub mfa_type: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+pub struct MFAResponse {
+    pub url: String,
 }

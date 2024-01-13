@@ -14,6 +14,8 @@ pub enum ServiceError {
     InvalidLoginAttmpt,
     #[error("user does not have privilege to access this resource")]
     Forbidden,
+    #[error("user does not have privilege to access this resource: {0}")]
+    ForbiddenWithMessage(String),
     #[error("{0}")]
     NotFound(String),
     #[error("{0}")]
@@ -47,7 +49,11 @@ impl IntoResponse for ServiceError {
                 Self::InvalidLoginAttmpt.to_string(),
             ),
             Self::Unauthorized => (StatusCode::UNAUTHORIZED, Self::Unauthorized.to_string()),
-            Self::AnyhowError(err) => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            Self::AnyhowError(err) => match err.to_string().contains("unique constraint") {
+                true => (StatusCode::BAD_REQUEST, err.to_string()),
+                false => (StatusCode::INTERNAL_SERVER_ERROR, err.to_string()),
+            },
+            Self::ForbiddenWithMessage(err) => (StatusCode::FORBIDDEN, err),
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 format!("unexpected error {:?}", self),

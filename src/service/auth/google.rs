@@ -153,6 +153,7 @@ pub async fn callback(
 
     let user = match existing_user {
         Some(mut x) => {
+            // mean user is already sign-in but not authenticated.
             if x.auth_provider.is_none() {
                 x.auth_provider = Some(GOOGLE_OAUTH_PROVIDER.to_string());
                 x.auth_provider_user_id = Some(user_info.sub);
@@ -173,6 +174,7 @@ pub async fn callback(
                     password: "".to_string(),
                     auth_provider: Some(GOOGLE_OAUTH_PROVIDER.to_string()),
                     auth_provider_user_id: Some(user_info.sub),
+                    secret: None,
                 },
             )
             .await?;
@@ -184,11 +186,9 @@ pub async fn callback(
     // enough for authentication proccess here's the authorization process
     let auth_code = Uuid::new_v4();
 
-    Ok((
-        StatusCode::OK,
-        Json(user.into_dto(
-            auth_code.to_string(),
-            "supposethisisrefreshtoken".to_string(),
-        )),
-    ))
+    Ok(Json(user.into_dto(
+        Some(auth_code.to_string()),
+        Some("supposethisisrefreshtoken".to_string()),
+        None,
+    )))
 }

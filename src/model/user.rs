@@ -1,11 +1,6 @@
-use super::ModelManager;
-use crate::{
-    ctx::Ctx,
-    http::{request::user::CreateUserDTO, response::user::UserDTO},
-};
+use crate::http::response::user::UserDTO;
+use serde::{Deserialize, Serialize};
 use sqlx::{prelude::FromRow, types::time::OffsetDateTime};
-
-use crate::model::error::{Error, Result};
 
 #[derive(FromRow)]
 pub struct User {
@@ -17,6 +12,7 @@ pub struct User {
     pub email: String,
     pub auth_provider: Option<String>,
     pub auth_provider_user_id: Option<String>,
+    pub secret: Option<String>,
     pub password: String,
 }
 
@@ -24,57 +20,40 @@ pub struct UserFilter {
     pub email: String,
 }
 
-impl Into<UserDTO> for User {
-    fn into(self) -> UserDTO {
-        return UserDTO {
-            id: self.id,
-            name: self.name,
-            email: self.email,
-            token: None,
-            refresh_token: None,
-        };
-    }
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CustomTokenClaims {
+    pub sub: u64,
+    pub iat: usize,
+    pub exp: usize,
 }
 
-impl User {
-    pub fn into_dto(self, token: String, refresh_token: String) -> UserDTO {
+impl From<User> for UserDTO {
+    fn from(val: User) -> Self {
         UserDTO {
-            id: self.id,
-            name: self.name,
-            email: self.email,
-            token: Some(token),
-            refresh_token: Some(refresh_token),
+            id: val.id,
+            name: val.name,
+            email: val.email,
+            token: None,
+            refresh_token: None,
+            mfa_type: None,
         }
     }
 }
 
-pub struct UsersBMC {}
-
-impl UsersBMC {
-    pub async fn create(_ctx: Ctx, mm: &ModelManager, data: &CreateUserDTO) -> Result<i64> {
-        let db = mm.db();
-
-        // fetch one return a tuple.
-        let (id,) = sqlx::query_as(
-            r#"INSERT INTO users (name,email,password) VALUES ($1, $2, $3) RETURNING id"#,
-        )
-        .bind(&data.name)
-        .bind(&data.email)
-        .bind(&data.password)
-        .fetch_one(db)
-        .await?;
-
-        Ok(id)
-    }
-
-    pub async fn get_by_email(_ctx: Ctx, mm: &ModelManager, f: &UserFilter) -> Result<User> {
-        let db = mm.db();
-
-        let data: User = sqlx::query_as(r#"SELECT * FROM users WHERE lower(email) = $1"#)
-            .bind(&f.email)
-            .fetch_one(db)
-            .await?;
-
-        Ok(data)
+impl User {
+    pub fn into_dto(
+        self,
+        token: Option<String>,
+        refresh_token: Option<String>,
+        mfa_type: Option<String>,
+    ) -> UserDTO {
+        UserDTO {
+            id: self.id,
+            name: self.name,
+            email: self.email,
+            token,
+            refresh_token,
+            mfa_type,
+        }
     }
 }

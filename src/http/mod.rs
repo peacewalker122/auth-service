@@ -1,12 +1,16 @@
-use axum::{routing, Router};
+use axum::{middleware as axum_middleware, routing, Router};
 
 use crate::model::ModelManager;
 
-use self::auth::{create_user, google_oauth_callback, google_oauth_login, login};
+use self::{
+    auth::{allow_mfa, create_user, google_oauth_callback, google_oauth_login, login},
+    middleware::jwt::jwt_auth,
+};
 
 mod auth;
 mod error;
 
+pub mod middleware;
 pub mod request;
 pub mod response;
 
@@ -20,6 +24,10 @@ pub fn new_router(mm: ModelManager) -> Router {
         .route(
             "/google/oauth/callback",
             routing::get(google_oauth_callback),
+        )
+        .route(
+            "/auth/allow/mfa",
+            routing::patch(allow_mfa).route_layer(axum_middleware::from_fn(jwt_auth)),
         )
         .with_state(mm)
 }

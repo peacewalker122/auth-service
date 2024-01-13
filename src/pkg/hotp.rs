@@ -10,7 +10,7 @@ use super::{
 
 // TODO: Implement this as a MFA in our services.
 
-struct Hotp {
+pub struct Hotp {
     pub hash_function: HMAC,
     pub issuer: String,
     pub target_email: String,

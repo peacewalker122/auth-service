@@ -13,7 +13,7 @@ pub type DB = Pool<Postgres>;
 pub async fn new_db_pool() -> Result<DB> {
     let opts = PgConnectOptions::from_str(&env::var("DATABASE_URL").expect("DB_URL must be set!"))
         .map_err(|e| Error::FailToCreatePool(e.to_string()))?
-        .log_statements(log::LevelFilter::Trace)
+        .log_statements(log::LevelFilter::Debug)
         .clone();
 
     PgPoolOptions::new()

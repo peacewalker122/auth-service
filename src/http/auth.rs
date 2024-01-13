@@ -1,11 +1,12 @@
 use crate::{
+    ctx::Ctx,
     model::ModelManager,
     service::{self, auth, user::UserService},
 };
 use axum::{
     extract::{Query, State},
     response::IntoResponse,
-    Json,
+    Extension, Json,
 };
 
 use super::request::{
@@ -28,6 +29,7 @@ pub async fn create_user(
             password: payload.password,
             auth_provider: None,
             auth_provider_user_id: None,
+            secret: None,
         },
     )
     .await?;
@@ -58,4 +60,13 @@ pub async fn google_oauth_callback(
     let resp = auth::google::callback(mm, cookies, payload).await?;
 
     Ok(resp)
+}
+
+pub async fn allow_mfa(
+    State(mm): State<ModelManager>,
+    Extension(ctx): Extension<Ctx>,
+) -> service::Result<impl IntoResponse> {
+    let resp = UserService::set_mfa(&mm, &ctx).await?;
+
+    Ok(Json(resp))
 }

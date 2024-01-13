@@ -10,13 +10,14 @@ pub struct UserRepository {}
 impl UserRepository {
     pub async fn create(_ctx: Ctx, mm: &ModelManager, req: CreateUserDTO) -> anyhow::Result<User> {
         let user: User = sqlx::query_as(
-            r#"INSERT INTO users (name,email,password,created_at,auth_provider,auth_provider_user_id) VALUES ($1, $2, $3, current_timestamp, $4,$5) RETURNING *"#,
+            r#"INSERT INTO users (name,email,password,created_at,auth_provider,auth_provider_user_id,secret) VALUES ($1, $2, $3, current_timestamp, $4,$5,$6) RETURNING *"#,
         )
             .bind(req.name)
             .bind(req.email)
             .bind(req.password)
             .bind(req.auth_provider)
             .bind(req.auth_provider_user_id)
+            .bind(req.secret)
             .fetch_one(&mm.db)
             .await?;
 
@@ -37,6 +38,15 @@ impl UserRepository {
         Ok(user)
     }
 
+    pub async fn get_by_id(_ctx: Ctx, mm: &ModelManager, id: i64) -> anyhow::Result<User> {
+        let user: User = sqlx::query_as("SELECT * FROM users where id = $1 AND deleted_at IS NULL")
+            .bind(&id)
+            .fetch_one(&mm.db)
+            .await?;
+
+        Ok(user)
+    }
+
     pub async fn update(
         _ctx: Ctx,
         mm: &ModelManager,
@@ -51,7 +61,8 @@ impl UserRepository {
                     name = $2,
                     email = $3,
                     auth_provider = COALESCE(auth_provider, $4),
-                    auth_provider_user_id = COALESCE(auth_provider_user_id, $5)
+                    auth_provider_user_id = COALESCE(auth_provider_user_id, $5),
+                    secret = COALESCE(secret, $6)
                 WHERE id = $1;
             "#,
         )
@@ -60,6 +71,7 @@ impl UserRepository {
         .bind(&model.email)
         .bind(&model.auth_provider)
         .bind(&model.auth_provider_user_id)
+        .bind(&model.secret)
         .execute(&mm.db)
         .await?;
 

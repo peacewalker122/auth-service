@@ -2,6 +2,8 @@
 // The encoding process represents 40-bit groups of input bits as output strings of 8 encoded characters
 // These 40 bits are then treated as 8 concatenated 5-bit groups, each of which is translated into a single character in the base 32 alphabet.
 
+pub mod rand;
+
 const BASE32_ALPHABET: [char; 32] = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S',
     'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '2', '3', '4', '5', '6', '7',

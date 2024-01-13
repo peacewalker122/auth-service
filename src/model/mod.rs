@@ -5,6 +5,7 @@ pub mod user;
 pub use self::error::Error;
 
 use error::Result;
+use log::info;
 #[derive(Debug, Clone)]
 pub struct ModelManager {
     pub db: DB,
@@ -13,6 +14,8 @@ pub struct ModelManager {
 impl ModelManager {
     pub async fn new() -> Result<ModelManager> {
         let db = new_db_pool().await?;
+
+        info!("connected to DB auth");
 
         Ok(ModelManager { db })
     }
