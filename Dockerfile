@@ -1,25 +1,18 @@
-FROM rust:1.73-slim-bullseye as builder
-RUN USER=root cargo new --bin http-server-starter-rust
+FROM rust:1.73.0-slim-bullseye AS build
 
-COPY . /app
-WORKDIR /app
+ARG APP_NAME=auth-service
 
-# RUN apk add --no-cache wget
-#
-# RUN wget https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz
-# RUN tar -xzvf migrate.linux-amd64.tar.gz
+WORKDIR /build
 
-## Install target platform (Cross-Compilation) --> Needed for Alpine
-RUN rustup target add x86_64-unknown-linux-musl
+COPY Cargo.lock Cargo.toml ./
+RUN mkdir src \
+  && echo "// dummy file" > src/lib.rs \
+  && cargo build --release
 
-# This is a dummy build to get the dependencies cached.
-RUN cargo build --target x86_64-unknown-linux-musl --release
+COPY src src
+RUN cargo build --locked --release
+RUN cp ./target/release/$APP_NAME /bin/server
 
-FROM debian:bullseye-slim
-WORKDIR /app
-COPY --from=builder /app/migrate /usr/bin/migrate
-COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/http-server-starter-rust ./server
-
-EXPOSE 4221
-
-CMD [ "/app/server","-p","4221"]
+FROM debian:bullseye-slim AS final
+COPY --from=build /bin/server /bin/
+CMD ["/bin/server","-p","4221"]
