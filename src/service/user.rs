@@ -47,7 +47,6 @@ impl UserService {
         ))
     }
 
-    // TODO: handle when user already use mfa
     pub async fn login(mm: &ModelManager, email: String, password: String) -> Result<UserDTO> {
         let Some(user) = UserRepository::get_by_email(Ctx::root_ctx(), mm, &email).await? else {
             return Err(ServiceError::NotFound(
@@ -55,20 +54,20 @@ impl UserService {
             ));
         };
 
-        // if user.password.is_empty() {
-        //     return Err(ServiceError::ForbiddenWithMessage(String::from(
-        //         "wrong endpoint, should try oauth",
-        //     )));
-        // }
-
-        if user.secret.is_some() {
-            return Ok(user.into_dto(None, None, Some("TOTP".to_string())));
+        if user.password.is_empty() {
+            return Err(ServiceError::ForbiddenWithMessage(String::from(
+                "wrong endpoint, should try oauth",
+            )));
         }
 
         let is_match = verify(password.as_bytes(), &user.password)?;
 
         if !is_match {
             return Err(ServiceError::Unauthorized);
+        }
+
+        if user.secret.is_some() {
+            return Ok(user.into_dto(None, None, Some("TOTP".to_string())));
         }
 
         // let's say this is the jwt token.

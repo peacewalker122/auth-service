@@ -1,7 +1,8 @@
 use std::env;
 
 use auth_service::{http, model::ModelManager};
-use axum::Router;
+use axum::{http::Method, Router};
+use tower_http::cors::{Any, CorsLayer};
 
 #[tokio::main]
 async fn main() {
@@ -20,5 +21,9 @@ async fn main() {
 }
 
 fn new_router(mm: ModelManager) -> Router {
-    Router::new().merge(http::new_router(mm))
+    let cors_layer = CorsLayer::new()
+        .allow_methods([Method::GET, Method::POST, Method::PATCH, Method::HEAD])
+        .allow_headers(Any)
+        .allow_origin(Any);
+    Router::new().merge(http::new_router(mm)).layer(cors_layer)
 }

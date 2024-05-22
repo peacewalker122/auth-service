@@ -18,7 +18,7 @@ pub use self::error::{ApiError, Error};
 
 pub fn new_router(mm: ModelManager) -> Router {
     Router::new()
-        .route("/json", routing::post(create_user))
+        .route("/signup", routing::post(create_user))
         .route("/login", routing::post(login))
         .route("/google/oauth/login", routing::get(google_oauth_login))
         .route(
