@@ -51,6 +51,6 @@ mod test {
     fn test_ok_encode_base32() {
         let val = encode_base32(b"Hello World!", true);
 
-        assert_eq!(val, "JBSWY3DPEBLW64TMMQ======");
+        assert_eq!(val, "JBSWY3DPEBLW64TMMQQQ====");
     }
 }

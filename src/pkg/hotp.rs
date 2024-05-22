@@ -127,19 +127,19 @@ fn pow(base: u64, exp: u64) -> u64 {
 mod test {
     use chrono::{TimeZone, Utc};
 
-    use crate::pkg::hotp::Hotp;
+    use crate::pkg::{hmac::HMAC, hotp::Hotp};
 
     #[test]
     fn hotp_ok() {
         let val = Hotp::new(
-            None,
+            Some(HMAC::HMACSHA1),
             "authservice",
             "test@mail.com",
             "12345678901234567890",
             6,
         );
 
-        let result = val.hotp(12).unwrap();
+        let result = val.hotp(0).unwrap();
 
         assert_eq!(result, 755224);
     }
