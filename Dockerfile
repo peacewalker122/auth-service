@@ -9,9 +9,6 @@ WORKDIR /app
 
 RUN cargo build --release
 
-COPY src ./src
-RUN cargo install --path .
-
 FROM debian:bullseye-slim
 COPY --from=build /usr/local/cargo/bin/${APP_NAME} /usr/local/bin/${APP_NAME}
 
