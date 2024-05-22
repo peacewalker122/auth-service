@@ -1,12 +1,12 @@
-FROM rust:1.73.0-bullseye AS build
+FROM rust:1.73-bullseye AS build
 
 ARG APP_NAME=auth-service
 
 RUN apt-get update && apt-get install -y cargo
 
+COPY . /app
 WORKDIR /app
 
-COPY Cargo.lock Cargo.toml ./
 RUN cargo build --release
 
 COPY src ./src
