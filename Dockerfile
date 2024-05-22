@@ -4,6 +4,8 @@ RUN USER=root cargo new --bin http-server-starter-rust
 COPY . /app
 WORKDIR /app
 
+RUN apk add --no-cache wget
+
 RUN wget https://github.com/golang-migrate/migrate/releases/download/v4.17.1/migrate.linux-amd64.tar.gz
 RUN tar -xzvf migrate.linux-amd64.tar.gz
 
