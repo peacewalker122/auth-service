@@ -1,4 +1,4 @@
-FROM rust:1.73.0-slim-bullseye AS build
+FROM rust:1.73.0-bullseye AS build
 
 ARG APP_NAME=auth-service
 
