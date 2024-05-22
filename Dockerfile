@@ -1,4 +1,4 @@
-FROM rust:1.73-slim as builder
+FROM rust:1.73-slim-bullseye as builder
 RUN USER=root cargo new --bin http-server-starter-rust
 
 COPY . /app
@@ -15,7 +15,7 @@ RUN rustup target add x86_64-unknown-linux-musl
 # This is a dummy build to get the dependencies cached.
 RUN cargo build --target x86_64-unknown-linux-musl --release
 
-FROM alpine
+FROM debian:bullseye-slim
 WORKDIR /app
 COPY --from=builder /app/migrate /usr/bin/migrate
 COPY --from=builder /app/target/x86_64-unknown-linux-musl/release/http-server-starter-rust ./server
