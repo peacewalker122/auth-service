@@ -6,7 +6,6 @@ WORKDIR /build
 
 COPY Cargo.lock Cargo.toml ./
 RUN mkdir src \
-  && echo "// dummy file" > src/lib.rs \
   && cargo build --release
 
 COPY src src
